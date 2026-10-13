@@ -3,6 +3,7 @@ package goodconnect
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -116,29 +117,13 @@ func isChallengeTitle(title string) bool {
 		strings.Contains(l, "cf-challenge")
 }
 
-// reqHost is a small helper that extracts the "//host" part.
+// reqHost returns the URL host, including its port, used as the cookie-map key.
 func reqHost(u string) string {
-	for i := 0; i+3 <= len(u); i++ {
-		if u[i] == ':' && i+3 <= len(u) && u[i+1] == '/' && u[i+2] == '/' {
-			s := u[i+2:]
-			for j := i + 2; j < len(s); j++ {
-				if s[j] == '/' {
-					return s[:j]
-				}
-			}
-			return s
-		}
+	parsed, err := url.Parse(u)
+	if err != nil {
+		return ""
 	}
-	if len(u) >= 2 && u[0] == '/' && u[1] == '/' {
-		s := u[2:]
-		for j := 0; j < len(s); j++ {
-			if s[j] == '/' {
-				return s[:j]
-			}
-		}
-		return s
-	}
-	return u
+	return parsed.Host
 }
 
 // storeOne stores a single cookie for the host.
